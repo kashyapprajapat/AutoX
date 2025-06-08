@@ -86,7 +86,7 @@ const scheduleTweet = (time, topic) => {
 };
 
 // Schedule tweets
-scheduleTweet('0 10 * * *', getRandomTechTopic, true); // 10 AM
+scheduleTweet('0 10 * * *', getRandomTechTopic()); // 10 AM
 scheduleTweet('0 15 * * *', 'SASS(Software As a Service) related jurney-Product build related jurney'); // 3 PM
 scheduleTweet('0 21 * * *', 'Codding related with calm,peasefully as well as motivate me for tommorw work'); // 9 PM
 
@@ -114,9 +114,7 @@ app.get("/ping",(req,res)=>{
   res.status(200).send("pong");
 })
 
-// 🧪 TEST SCHEDULE - Remove after testing
-scheduleTweet('7 10 * * *',getRandomTechTopic, true ); // 10:10 AM
-scheduleTweet('10 10 * * *', getRandomTechTopic, true); // 10:12 AM
+
 
 //===========================================  Testing API ===============================================
 
@@ -206,6 +204,10 @@ scheduleTweet('10 10 * * *', getRandomTechTopic, true); // 10:12 AM
 //     });
 //   }
 // });
+
+// // 🧪 TEST SCHEDULE - Remove after testing
+// scheduleTweet('40 10 * * *',getRandomTechTopic()); // 10:40 AM
+// scheduleTweet('43 10 * * *', getRandomTechTopic()); // 10:43 AM
 
 //===========================================  Testing API ===============================================
 
