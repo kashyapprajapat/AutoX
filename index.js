@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 7000;
 // 🚦 Rate Limiting - Very restrictive
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Only 5 requests per 15 minutes per IP
+  max: 7, // Only 5 requests per 15 minutes per IP
   message: {
     error: 'Too many requests from this IP, please try again later.'
   },
@@ -101,13 +101,22 @@ app.get('/status', (req, res) => {
     status: 'running',
     message: 'Auto Tweet App is healthy 💚',
     scheduledTweets: [
-      { time: '10:00 AM', topic: 'saas coding journey' },
-      { time: '03:00 PM', topic: 'real-life coding impact' },
-      { time: '09:00 PM', topic: 'coding advice calm happy' }
+      { time: '10:00 AM', topic: 'WebDev/MobileDev/Devops' },
+      { time: '03:00 PM', topic: 'Sass' },
+      { time: '09:00 PM', topic: 'Coding Advice' }
     ],
     timestamp: new Date().toISOString()
   });
 });
+
+// Active Render to post
+app.get("/ping",(req,res)=>{
+  res.status(200).send("pong");
+})
+
+// 🧪 TEST SCHEDULE - Remove after testing
+scheduleTweet('7 10 * * *',getRandomTechTopic, true ); // 10:10 AM
+scheduleTweet('10 10 * * *', getRandomTechTopic, true); // 10:12 AM
 
 //===========================================  Testing API ===============================================
 
