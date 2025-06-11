@@ -88,7 +88,7 @@ const scheduleTweet = (time, topic) => {
 // Schedule tweets
 scheduleTweet('0 10 * * *', getRandomTechTopic()); // 10 AM
 scheduleTweet('0 15 * * *', 'SASS(Software As a Service) related jurney-Product build related jurney'); // 3 PM
-scheduleTweet('0 21 * * *', 'Codding related with calm,peasefully as well as motivate me for tommorw work'); // 9 PM
+scheduleTweet('0 21 * * *', getRandomTechTopic()); // 9 PM
 
 // Root endpoint
 app.get('/', (req, res) => {
