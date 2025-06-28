@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cron = require('node-cron');
 const { postTweet } = require('./twitter');
-const { generateContent } = require('./contentGenerator');
+// const { generateContent } = require('./contentGenerator');  //<-- Version 1 with Gemini API
+const { generateContent } = require('./contentGeneratorV2');   //<-- Version 2 with GqoqCloude API
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
