@@ -1,0 +1,114 @@
+name: 🚀 Auto Tweet Render Keep-Alive
+
+on:
+  schedule:
+    - cron: '50,57 9,14,20 * * *'
+  
+
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test mode - ping service now'
+        required: false
+        default: 'false'
+
+env:
+  SERVICE_URL: https://autox-tro9.onrender.com
+
+jobs:
+  keep-service-alive:
+    name: 📡 Ping Render Service
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🏓 Ping Auto-Tweet Service
+        id: ping
+        run: |
+          echo "🌟 Starting keep-alive ping at $(date -u)"
+          echo "🎯 Target: $SERVICE_URL/ping"
+          
+          # First ping attempt
+          echo "🔄 Attempting first ping..."
+          response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\nTIME_TOTAL:%{time_total}" \
+            -H "User-Agent: GitHub-Actions-KeepAlive/1.0" \
+            -H "Accept: application/json" \
+            --max-time 30 \
+            --retry 2 \
+            --retry-delay 5 \
+            $SERVICE_URL/ping || echo "CURL_FAILED")
+          
+          # Parse response
+          if [[ "$response" == *"CURL_FAILED"* ]]; then
+            echo "❌ Curl command failed"
+            exit_code=1
+          else
+            http_status=$(echo "$response" | grep "HTTP_STATUS" | cut -d: -f2)
+            time_total=$(echo "$response" | grep "TIME_TOTAL" | cut -d: -f2)
+            response_body=$(echo "$response" | sed '/HTTP_STATUS/d' | sed '/TIME_TOTAL/d')
+            
+            echo "📊 HTTP Status: $http_status"
+            echo "⏱️  Response Time: ${time_total}s"
+            echo "📝 Response Body: $response_body"
+            
+            if [ "$http_status" = "200" ]; then
+              echo "✅ Service is awake and healthy!"
+              exit_code=0
+            elif [ "$http_status" = "503" ]; then
+              echo "💤 Service was hibernated - wake-up triggered"
+              echo "🔄 This is expected behavior for free Render services"
+              exit_code=0
+            else
+              echo "⚠️  Unexpected HTTP status: $http_status"
+              exit_code=1
+            fi
+          fi
+          
+          # Set outputs for next step
+          echo "http_status=$http_status" >> $GITHUB_OUTPUT
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+
+      - name: 🔍 Health Check (Optional Second Ping)
+        if: steps.ping.outputs.http_status == '503'
+        run: |
+          echo "⏳ Service was hibernated, waiting 45 seconds for wake-up..."
+          sleep 45
+          
+          echo "🔄 Performing health check ping..."
+          health_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -H "User-Agent: GitHub-Actions-HealthCheck/1.0" \
+            --max-time 30 \
+            $SERVICE_URL/ping || echo "HEALTH_CHECK_FAILED")
+          
+          if [[ "$health_response" == *"HEALTH_CHECK_FAILED"* ]]; then
+            echo "⚠️  Health check failed, but service should be waking up"
+          else
+            health_status=$(echo "$health_response" | grep "HTTP_STATUS" | cut -d: -f2)
+            echo "🏥 Health Check Status: $health_status"
+            
+            if [ "$health_status" = "200" ]; then
+              echo "🎉 Service is now fully awake!"
+            else
+              echo "⏳ Service is still starting up (this is normal)"
+            fi
+          fi
+
+      - name: 📈 Log Summary
+        if: always()
+        run: |
+          echo "================================================"
+          echo "🚀 Auto Tweet Keep-Alive Summary"
+          echo "================================================"
+          echo "🕐 Run Time: $(date -u)"
+          echo "🎯 Service: $SERVICE_URL"
+          echo "📊 Status: ${{ steps.ping.outputs.http_status || 'Unknown' }}"
+          echo "🔄 Next scheduled tweets:"
+          echo "   • 10:00 AM UTC - Tech Tips"
+          echo "   • 15:00 PM UTC - SaaS Journey" 
+          echo "   • 21:00 PM UTC - Tech Tips"
+          echo "================================================"
+          
+          if [ "${{ steps.ping.outputs.exit_code }}" = "0" ]; then
+            echo "✅ Keep-alive mission successful!"
+          else
+            echo "⚠️  Keep-alive completed with warnings"
+          fi
